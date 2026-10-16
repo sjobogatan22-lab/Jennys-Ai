@@ -1,0 +1,24 @@
+JENNYS AI – FÖR IPHONE OCH GITHUB PAGES
+
+Det här är en fungerande första version, men ännu ingen AI-modell är inkopplad.
+
+Det här fungerar:
+* Chatta i testläge och spara chatt lokalt
+* Kom ihåg att ... / Vad minns du om mig?
+* Fliken Minnen: lägg till, radera
+* Ändra appens namn, exportera/importera backup
+* Lägg till på iPhones hemskärm med kattikon
+* Grundfunktionerna fungerar efter första laddningen även utan internet (offline-cache)
+
+PUBLICERING DIREKT FRÅN IPHONE – Github.com i Safari
+1. Öppna ZIP-filen i appen Filer. Tryck på ZIP-filen för att packa upp den.
+2. Logga in på github.com och skapa ett nytt repository med namnet jennys-ai. Välj Public och skapa med README (eller skapa utan README om GitHub erbjuder det).
+3. I repository: Add file > Upload files. Välj filerna index.html, apple-touch-icon.png, icon-192.png, manifest.webmanifest, sw.js från den uppackade mappen. Filerna ska ligga DIREKT i repositorys rot, inte inuti någon undermapp.
+4. Scrolla och klicka Commit changes.
+5. GitHub: Settings > Pages. Under Build and deployment välj Deploy from a branch, branch main, folder /(root), och Save.
+6. Vänta tills GitHub visar webbadressen (kan ta flera minuter), öppna via Safari.
+7. Safari: Dela > Lägg till på hemskärmen > Öppna som webbapp > Lägg till.
+
+OBS: Webbplatsens kod blir offentlig på GitHub Pages. Lägg inte upp privata dokument, API-nycklar eller lösenord i repositoryt. Minnesanteckningar som du skriver inne i appen sparas bara lokalt på telefonen, inte i GitHub. Rensa inte Safari-data utan backup.
+
+Den fulla AI-motorn kopplas på i ett senare steg via en säker serverdel. GitHub Pages kan inte själv köra AI-servern. Appen är ännu inte publicerad: publiceringen sker när du genomför GitHub-stegen ovan.
