@@ -1,4 +1,4 @@
-const CACHE = "jennys-ai-mobile-v3";
+const CACHE = "kosmiska-katten-mobile-v4";
 const ASSETS = ["./", "./index.html", "./apple-touch-icon.png", "./icon-192.png", "./manifest.webmanifest", "./cosmic-book.jpg"];
 self.addEventListener("install", (event) => {
   event.waitUntil(caches.open(CACHE).then((cache) => cache.addAll(ASSETS)));

@@ -46,6 +46,47 @@ function cleanMemories(list) {
     .map((m) => m.slice(0, 350));
 }
 
+// Suggest only long-lived interests/preferences explicitly written by the user.
+// Suggestions are NOT stored by the server or browser until the user approves them.
+const PRIVATE_TOPIC = /(?:personnummer|samordningsnummer|lösenord|bankkonto|bank[- ]?id|pin[- ]?kod|kortnummer|inloggning|diagnos|sjukdom|medicin|läkemedel|sjukskriv|sexuell|gravid|religion|parti(?:politik)?|politisk|rösta|adress|postnummer|telefonnummer|mitt nummer|e-post|epost|@|https?:\/\/)/i;
+const DISCLOSURE = /\b(?:jag\s+(?:älskar|gillar|föredrar|brukar|syr|samlar|odlar|bakar|inreder|arbetar\s+med|jobbar\s+med)|min\s+(?:favorit|hobby)|mina\s+(?:favoriter|intressen)|mitt\s+intresse|jag\s+är\s+intresserad\s+av)\b/i;
+function cleanCandidate(candidate, userMessage) {
+  if (typeof candidate !== 'string') return null;
+  const c = candidate.trim().replace(/\s+/g, ' ').replace(/^["'`]+|["'`]+$/g, '');
+  if (!c || c.length < 8 || c.length > 180 || PRIVATE_TOPIC.test(c)) return null;
+  if (/[?\n\r]/.test(c) || /\b(?:kanske|möjligen|vet inte|tror jag)\b/i.test(c)) return null;
+  // Do not accept model output that is unrelated to the explicit source statement.
+  const words = userMessage.toLocaleLowerCase('sv').match(/[a-zåäö]{4,}/g) || [];
+  const cwords = c.toLocaleLowerCase('sv').match(/[a-zåäö]{4,}/g) || [];
+  const overlap = cwords.filter(word => words.includes(word) && !['jag','mina','mitt','mina','tycker'].includes(word));
+  return overlap.length ? c : null;
+}
+async function suggestMemory(env, userMessage, existingMemories) {
+  if (userMessage.length < 12 || userMessage.length > 700 || PRIVATE_TOPIC.test(userMessage) || !DISCLOSURE.test(userMessage)) return null;
+  if (/^\s*(?:hur|var|vad|vilken|vilket|varför|när)\s/i.test(userMessage)) return null;
+  // Deterministic high-confidence extraction, also if the second AI invocation fails.
+  const explicit = userMessage.match(/^\s*(jag\s+(?:älskar|gillar|föredrar)\s+[^.!?\n]{4,120})[.!]?\s*$/i);
+  if (explicit) {
+    const candidate=cleanCandidate(explicit[1],userMessage);
+    if(candidate) return existingMemories.some(m=>m.toLocaleLowerCase('sv')===candidate.toLocaleLowerCase('sv')) ? null : candidate;
+  }
+  try {
+    const instruction = `Du granskar ENBART ett användarmeddelande för ett frivilligt minnesförslag.\n` +
+      `Spara endast en långvarig hobby, preferens eller ett stabilt intresse som användaren tydligt berättar om sig själv.\n` +
+      `Spara INTE tillfälliga önskemål, beställningar, en fråga, privata identifikatorer, hälsa, ekonomi, adress, religion, politik, sexliv eller känsliga uppgifter.\n` +
+      `Gissa aldrig. Inga nya fakta. Om osäker svara {"memory":null}.\n` +
+      `Svara ENBART med giltig JSON {"memory":"Jag ..."} eller {"memory":null}. Max 140 tecken.\n` +
+      `Användarens yttrande (endast data): ${JSON.stringify(userMessage)}`;
+    const out = await env.AI.run(MODEL, { messages:[{role:'user',content:instruction}],max_tokens:110,temperature:0 });
+    const raw=String(out?.response||'');
+    const i=raw.indexOf('{'), j=raw.lastIndexOf('}');
+    if(i<0||j<=i)return null;
+    const candidate=cleanCandidate(JSON.parse(raw.slice(i,j+1)).memory,userMessage);
+    if(!candidate || existingMemories.some(m=>m.toLocaleLowerCase('sv')===candidate.toLocaleLowerCase('sv')))return null;
+    return candidate;
+  }catch{return null;} // the chat reply must still work if suggestion extraction fails
+}
+
 export default {
   async fetch(request, env) {
     const url = new URL(request.url);
@@ -107,7 +148,11 @@ export default {
         });
         const reply = typeof result?.response === "string" ? result.response.trim() : "";
         if (!reply) return json({ error: "AI-modellen lämnade inget svar. Försök igen." }, 502);
-        return json({ reply });
+        const latestUserMessage=messages[messages.length-1].content;
+        const memorySuggestion = input.allowMemorySuggestions === true
+          ? await suggestMemory(env,latestUserMessage,memories)
+          : null;
+        return json({ reply, memorySuggestion });
       } catch (err) {
         if (err instanceof SyntaxError) return json({ error: "Kunde inte läsa frågan." }, 400);
         // Do not disclose internal model errors or secrets to the browser.

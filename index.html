@@ -101,6 +101,19 @@ h1 { font:normal 25px Georgia,serif; margin:2px 0 0; letter-spacing:-.5px; }
 .status { max-width:86px; white-space:normal; text-align:center; }
 @media (max-height:700px) {.cosmic-art{height:120px;} .greeting-copy{padding:12px 17px;} .greeting h2{font-size:24px;} }
 
+
+/* Version 3: suggestions are ephemeral until the user approves them. */
+.memory-proposal { align-self:stretch; border:1px solid #d1d9c4; background:#f0f3e9; border-radius:18px; padding:15px; margin:5px 0 10px; box-shadow:0 5px 15px #3f513010; }
+.memory-proposal .proposal-eyebrow { font-size:10px; color:#52634d; letter-spacing:1.2px; font-weight:800; }
+.memory-proposal p { color:#3f4d3c; line-height:1.55; font-size:13px; margin:9px 0; }
+.memory-proposal .proposed-fact { background:#fffdf8; border-radius:12px; padding:12px; color:#293e2d; font-size:14px; line-height:1.45; overflow-wrap:anywhere; }
+.proposal-actions { display:flex; gap:9px; margin-top:12px; flex-wrap:wrap; }
+.proposal-actions button { border-radius:12px; padding:10px 13px; font-size:12px; font-weight:700; border:1px solid #bac8b1; }
+.proposal-approve { color:white; background:#52634d; }
+.proposal-decline { color:#52634d; background:white; }
+.memory-preference { display:flex; align-items:flex-start; gap:11px; font-size:13px; line-height:1.45; }
+.memory-preference input { width:20px; height:20px; flex:none; margin:1px 0 0; accent-color:#52634d; }
+.memory-preference label { margin:0; font-weight:600; }
 </style>
   <title>Kosmiska Katten</title>
 </head>
@@ -138,7 +151,7 @@ h1 { font:normal 25px Georgia,serif; margin:2px 0 0; letter-spacing:-.5px; }
 
       <section id="memory-view" class="view" aria-label="Minnen">
         <div class="section-heading"><span class="section-label">BLADEN I MIN GRÖNA BOK</span><h2>Minnenas bok <span aria-hidden="true">✦</span></h2>
-          <p>Det här är uppgifter som AI:n får använda för att lära känna dig. Du bestämmer vad som sparas.</p></div>
+          <p>Här bor bara sådant du själv valt att spara. I chatten kan katten föreslå nya minnen, men aldrig spara dem utan ditt ja.</p></div>
         <form id="memory-form" class="memory-form">
           <label for="new-memory">Något du vill att jag kommer ihåg</label>
           <textarea id="new-memory" rows="2" maxlength="350" placeholder="Till exempel: Jag älskar att sy och gillar olivgrönt."></textarea>
@@ -163,6 +176,14 @@ h1 { font:normal 25px Georgia,serif; margin:2px 0 0; letter-spacing:-.5px; }
           <input id="access-password" type="password" autocomplete="off" placeholder="Skriv lösenfrasen efter publicering" />
           <button type="button" id="save-password" class="secondary-button">Spara appkod på telefonen</button>
           <p class="hint">Använd samma lösenfras som du lägger in som hemligheten APP_PASSWORD i Cloudflare Pages. Den sparas på den här enheten. Undvik en lösenfras du använder på andra konton.</p>
+        </div>
+        <div class="settings-card">
+          <b>✦ Det magiska minnet</b>
+          <p class="hint">Låt katten föreslå minnen när du berättar om till exempel intressen och sådant du gillar. Du måste godkänna varje förslag innan det sparas. Känsliga uppgifter ska inte föreslås.</p>
+          <div class="memory-preference">
+            <input type="checkbox" id="suggest-memory" checked />
+            <label for="suggest-memory">Föreslå minnen under våra samtal</label>
+          </div>
         </div>
         <div class="settings-card">
           <b>Dina uppgifter</b>
@@ -210,6 +231,8 @@ h1 { font:normal 25px Georgia,serif; margin:2px 0 0; letter-spacing:-.5px; }
   let busy = false;
   let aiReady = false;
   let toastTimer;
+  let pendingSuggestion = null; // stays in memory only; never stored until explicit consent
+  let allowSuggestions = get("allowSuggestions", true);
 
   function toast(message) {
     const t=el("toast"); t.textContent=message; t.classList.add("show");
@@ -249,6 +272,22 @@ h1 { font:normal 25px Georgia,serif; margin:2px 0 0; letter-spacing:-.5px; }
       const bubble=document.createElement("div"); bubble.className="bubble"; renderFormattedText(bubble,m.content);
       wrapper.append(who,bubble); host.appendChild(wrapper);
     });
+    if(pendingSuggestion && allowSuggestions) {
+      const panel=document.createElement("div");panel.className="memory-proposal";
+      const title=document.createElement("div");title.className="proposal-eyebrow";title.textContent="✦ ETT NYTT BLAD I MIN BOK?";
+      const intro=document.createElement("p");intro.textContent="Vill du att jag sparar detta i den gröna visdomsboken?";
+      const fact=document.createElement("div");fact.className="proposed-fact";fact.textContent=pendingSuggestion;
+      const actions=document.createElement("div");actions.className="proposal-actions";
+      const yes=document.createElement("button");yes.type="button";yes.className="proposal-approve";yes.textContent="♡ Spara minne";
+      yes.addEventListener("click",()=>{
+        const selected=pendingSuggestion;pendingSuggestion=null;
+        const added=addMemory(selected);
+        renderMessages();toast(added?"Sparat i visdomsboken 💚":"Det minnet finns redan i boken");
+      });
+      const no=document.createElement("button");no.type="button";no.className="proposal-decline";no.textContent="Inte nu";
+      no.addEventListener("click",()=>{pendingSuggestion=null;renderMessages();});
+      actions.append(yes,no);panel.append(title,intro,fact,actions);host.append(panel);
+    }
     if(messages.length>0)el("suggestions").hidden=true;
     else el("suggestions").hidden=false;
     el("greeting").hidden = messages.length > 0;
@@ -287,6 +326,7 @@ h1 { font:normal 25px Georgia,serif; margin:2px 0 0; letter-spacing:-.5px; }
   }
   async function sendMessage(input){
     const message=input.trim(); if(!message||busy)return;
+    pendingSuggestion=null; // never approve a stale suggestion after a new message
     messages.push({role:"user",content:message}); save(); renderMessages();
     el("message-input").value="";
     const remembered=message.match(/^kom ihåg(?:\s+att)?\s+(.+)/is);
@@ -298,17 +338,22 @@ h1 { font:normal 25px Georgia,serif; margin:2px 0 0; letter-spacing:-.5px; }
     busy=true;el("send-button").disabled=true;
     try {
       let reply;
+      let suggestedMemory=null;
       if(password && aiReady){
         // This is a personal access code, not an API key. AI runs server-side.
         const controller=new AbortController();const timer=setTimeout(()=>controller.abort(),45000);
         try{
-          const res=await fetch("/api/chat",{method:"POST",headers:{"Content-Type":"application/json","x-app-password":password},body:JSON.stringify({messages:messages.slice(-18),memories:memories.slice(0,40),appName}),signal:controller.signal});
+          const res=await fetch("/api/chat",{method:"POST",headers:{"Content-Type":"application/json","x-app-password":password},body:JSON.stringify({messages:messages.slice(-18),memories:memories.slice(0,40),appName,allowMemorySuggestions:allowSuggestions}),signal:controller.signal});
           const data=await res.json().catch(()=>({}));
           if(!res.ok)throw new Error(data.error||"AI-servern svarade inte.");
           reply=data.reply;if(typeof reply!=="string"||!reply.trim())throw new Error("AI:n skickade ett tomt svar.");
+          if(allowSuggestions && typeof data.memorySuggestion==="string"){
+            const fact=data.memorySuggestion.trim().slice(0,180);
+            if(fact && !memories.some(m=>m.toLocaleLowerCase("sv")===fact.toLocaleLowerCase("sv")))suggestedMemory=fact;
+          }
         }finally{clearTimeout(timer);}
       } else reply=offlineReply(message);
-      messages.push({role:"assistant",content:reply});save();renderMessages();
+      messages.push({role:"assistant",content:reply});pendingSuggestion=suggestedMemory;save();renderMessages();
     } catch (error) {
       let msg=error.name==="AbortError"?"Det tog lite för lång tid. Försök igen.":error.message;
       messages.push({role:"assistant",content:"Det gick inte att kontakta AI:n just nu. "+msg+"\n\nDina minnen är fortfarande sparade på telefonen."});save();renderMessages();
@@ -319,6 +364,12 @@ h1 { font:normal 25px Georgia,serif; margin:2px 0 0; letter-spacing:-.5px; }
   el("message-input").addEventListener("keydown",e=>{if(e.key==="Enter"&&!e.shiftKey){e.preventDefault();el("composer").requestSubmit();}});
   document.querySelectorAll(".suggestion").forEach(b=>b.addEventListener("click",()=>sendMessage(b.dataset.prompt)));
   el("memory-form").addEventListener("submit",e=>{e.preventDefault();const txt=el("new-memory").value;if(addMemory(txt)){el("new-memory").value="";toast("Minnet är sparat 💚");}else toast("Skriv ett nytt minne först");});
+  el("suggest-memory").checked=allowSuggestions;
+  el("suggest-memory").addEventListener("change",e=>{
+    allowSuggestions=Boolean(e.target.checked);set("allowSuggestions",allowSuggestions);
+    if(!allowSuggestions)pendingSuggestion=null;
+    renderMessages();toast(allowSuggestions?"Minnesförslag aktiverade":"Minnesförslag avstängda");
+  });
   el("assistant-name").value=appName;
   el("assistant-name").addEventListener("change",e=>{appName=e.target.value.trim()||"Kosmiska Katten";set("appName",appName);el("app-title").textContent=appName;document.title=appName;renderMessages();toast("Namnet är sparat!");});
   el("access-password").value=password;
