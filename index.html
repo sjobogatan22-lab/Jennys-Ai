@@ -6,8 +6,8 @@
   <meta name="theme-color" content="#52634d" />
   <meta name="apple-mobile-web-app-capable" content="yes" />
   <meta name="apple-mobile-web-app-status-bar-style" content="default" />
-  <meta name="apple-mobile-web-app-title" content="Jennys AI" />
-  <meta name="description" content="En personlig AI-assistent med eget minne." />
+  <meta name="apple-mobile-web-app-title" content="Kosmiska Katten" />
+  <meta name="description" content="Kosmiska Katten – väktaren av den gröna visdomsboken. En personlig AI med minne." />
   
   <link rel="manifest" href="./manifest.webmanifest" />
   <link rel="icon" type="image/png" href="./icon-192.png" />
@@ -40,7 +40,7 @@ h1 { font:normal 25px Georgia,serif; margin:2px 0 0; letter-spacing:-.5px; }
 .message.assistant { align-self:flex-start; }
 .message.user { align-self:flex-end; }
 .message .who { font-size:10px; color:#7d8377; margin-left:7px; }
-.bubble { padding:13px 15px; font-size:14px; line-height:1.55; border-radius:18px; white-space:pre-wrap; overflow-wrap:anywhere; }
+.bubble { padding:13px 15px; font-size:14px; line-height:1.55; border-radius:18px; white-space:normal; overflow-wrap:anywhere; }
 .assistant .bubble { background:#eee9dd; border-bottom-left-radius:5px; }
 .user .bubble { background:var(--olive); color:white; border-bottom-right-radius:5px; }
 .prompt-row { display:flex; gap:8px; flex-wrap:wrap; margin:5px 0 14px; }
@@ -82,8 +82,27 @@ h1 { font:normal 25px Georgia,serif; margin:2px 0 0; letter-spacing:-.5px; }
 @media (min-width:600px) { .shell { border-radius:22px; margin:20px auto; height:min(850px,calc(100dvh - 40px)); } }
 @media (max-height:700px) { .greeting { padding:14px 20px; margin-top:10px; }.greeting h2 { font-size:25px; margin:8px 0; }.header { padding-bottom:10px; } }
 
+
+/* Kosmiska Katten version 2 – the original app's memory and AI routes remain unchanged. */
+.reply-line{min-height:1em;white-space:pre-wrap;}
+.reply-line.reply-blank{min-height:.62em;}
+.reply-line.reply-heading{font-weight:700;margin-top:6px;}
+.reply-line.reply-bullet{padding-left:2px;}
+.greeting { padding:0; background:#e9ebdf; overflow:hidden; border:1px solid #d4ddc7; box-shadow:0 8px 23px #54664d15; }
+.greeting::after { content:'✦'; font-size:47px; top:174px; right:15px; color:#b59c55; }
+.cosmic-art { height:178px; overflow:hidden; background:#1e3226; }
+.cosmic-art img { width:100%; height:100%; object-fit:cover; object-position:center 52%; display:block; }
+.greeting-copy { padding:17px 21px 19px; }
+.greeting h2 { font-size:26px; line-height:1.13; margin:9px 0; }
+.greeting p { max-width:none; font-size:12.6px; }
+.greeting .greeting-question { margin-top:10px; color:#415843; font-weight:700; }
+.creator-line { margin-top:15px; display:block; border-top:1px solid #b9c2aa; padding-top:10px; color:#52634d; font-size:8px; letter-spacing:1.2px; font-weight:700; }
+.greeting[hidden] { display:none !important; }
+.status { max-width:86px; white-space:normal; text-align:center; }
+@media (max-height:700px) {.cosmic-art{height:120px;} .greeting-copy{padding:12px 17px;} .greeting h2{font-size:24px;} }
+
 </style>
-  <title>Jennys AI</title>
+  <title>Kosmiska Katten</title>
 </head>
 <body>
   <div class="shell">
@@ -91,8 +110,8 @@ h1 { font:normal 25px Georgia,serif; margin:2px 0 0; letter-spacing:-.5px; }
       <div class="brand">
         <img src="./icon-192.png" alt="En liten katt" class="brand-icon" />
         <div>
-          <div class="eyebrow">DIN EGNA LILLA ASSISTENT</div>
-          <h1 id="app-title">Jennys AI</h1>
+          <div class="eyebrow">VISDOM · MINNEN · STJÄRNDAMM</div>
+          <h1 id="app-title">Kosmiska Katten</h1>
         </div>
       </div>
       <span class="status" id="connection-badge" aria-live="polite">Testläge</span>
@@ -100,20 +119,25 @@ h1 { font:normal 25px Georgia,serif; margin:2px 0 0; letter-spacing:-.5px; }
 
     <main id="main" class="main">
       <section id="chat-view" class="view active" aria-label="Chatt">
-        <div class="greeting">
-          <div class="greeting-top">✦ &nbsp; Hej och välkommen</div>
-          <h2>En liten vän med<br /><em>stort minne.</em></h2>
-          <p>Ett eget litet minne redan nu – och svar på nästan vad som helst när AI-kopplingen är klar.</p>
+        <div class="greeting" id="greeting">
+          <div class="cosmic-art"><img src="./cosmic-book.jpg" alt="Den kosmiska katten sitter på sin gigantiska gröna visdomsbok under stjärnorna" /></div>
+          <div class="greeting-copy">
+            <div class="greeting-top">✦ &nbsp; Välkommen till mitt lilla universum</div>
+            <h2>En kosmisk katt.<br /><em>En gigantisk grön bok.</em></h2>
+            <p>Jag vaktar visdomsboken, samlar dina minnen och hjälper dig att utforska både vardagens frågor och universums mysterier.</p>
+            <p class="greeting-question">Vad ska vi upptäcka tillsammans idag? ✨</p>
+            <span class="creator-line">SKAPAD &amp; UTVECKLAD AV JENNY HELLGREN</span>
+          </div>
         </div>
         <div id="messages" class="messages" role="log" aria-live="polite"></div>
         <div class="prompt-row" id="suggestions">
           <button type="button" class="suggestion" data-prompt="Vad minns du om mig?">🌿 Vad minns du om mig?</button>
-          <button type="button" class="suggestion" data-prompt="Berätta något intressant!">✨ Överraska mig</button>
+          <button type="button" class="suggestion" data-prompt="Berätta något fascinerande om universum!">🌌 Överraska mig</button>
         </div>
       </section>
 
       <section id="memory-view" class="view" aria-label="Minnen">
-        <div class="section-heading"><span class="section-label">MIN LILLA SAMLING</span><h2>Mina minnen <span aria-hidden="true">✿</span></h2>
+        <div class="section-heading"><span class="section-label">BLADEN I MIN GRÖNA BOK</span><h2>Minnenas bok <span aria-hidden="true">✦</span></h2>
           <p>Det här är uppgifter som AI:n får använda för att lära känna dig. Du bestämmer vad som sparas.</p></div>
         <form id="memory-form" class="memory-form">
           <label for="new-memory">Något du vill att jag kommer ihåg</label>
@@ -125,16 +149,16 @@ h1 { font:normal 25px Georgia,serif; margin:2px 0 0; letter-spacing:-.5px; }
       </section>
 
       <section id="settings-view" class="view" aria-label="Inställningar">
-        <div class="section-heading"><span class="section-label">GÖR DEN TILL DIN</span><h2>Inställningar <span aria-hidden="true">✿</span></h2>
-          <p>Här bestämmer du namn, anslutning och hur du sparar dina minnen.</p></div>
+        <div class="section-heading"><span class="section-label">DEN KOSMISKA KATTENS VERKSTAD</span><h2>Inställningar <span aria-hidden="true">✿</span></h2>
+          <p>Här hittar du inställningarna, din privata appkod och vem som skapat vår lilla värld.</p></div>
         <div class="settings-card">
           <label for="assistant-name">Vad ska din AI heta?</label>
-          <input id="assistant-name" maxlength="28" placeholder="Jennys AI" autocomplete="off" />
+          <input id="assistant-name" maxlength="28" placeholder="Kosmiska Katten" autocomplete="off" />
           <p class="hint">Du kan ändra namnet när du vill.</p>
         </div>
         <div class="settings-card">
           <div class="setting-heading"><b>AI-anslutning</b><span class="mini-pill" id="ai-pill">Inte aktiverad</span></div>
-          <p class="hint">I testläget fungerar ditt minne redan. För riktiga AI-svar behöver du senare koppla appen till Cloudflare Workers AI. GitHub Pages visar tills dess testläget.</p>
+          <p class="hint">När det står ”AI redo” kan jag svara på frågor med Cloudflares AI-modell. Jag är inte allvetande och har ingen automatisk direktsökning på internet. Ditt minne fungerar även i testläge.</p>
           <label for="access-password">Din privata app-lösenfras</label>
           <input id="access-password" type="password" autocomplete="off" placeholder="Skriv lösenfrasen efter publicering" />
           <button type="button" id="save-password" class="secondary-button">Spara appkod på telefonen</button>
@@ -149,6 +173,11 @@ h1 { font:normal 25px Georgia,serif; margin:2px 0 0; letter-spacing:-.5px; }
             <input type="file" id="import-file" accept="application/json,.json" hidden />
           </div>
           <button type="button" class="text-danger" id="clear-chat">Radera chatthistorik</button>
+        </div>
+<div class="settings-card creator-credit"><div class="greeting-top">✧ &nbsp; OM KOSMISKA KATTEN</div>
+          <p class="credit-title">Från en idé till ett litet universum</p>
+          <p class="hint">Skapad och utvecklad av <strong>Jenny Hellgren</strong>, med hjälp av AI som verktyg för kod och design. En personlig assistent som lär sig av de minnen du väljer att spara.</p>
+          <p class="hint">Katten vaktar sin gröna bok, men vet inte allt. Kontrollera viktiga uppgifter och använd alltid ditt eget omdöme.</p>
         </div>
       </section>
     </main>
@@ -175,7 +204,8 @@ h1 { font:normal 25px Georgia,serif; margin:2px 0 0; letter-spacing:-.5px; }
   const set = (name, data) => localStorage.setItem(PREFIX+name, JSON.stringify(data));
   let messages = get("messages", []);
   let memories = get("memories", []);
-  let appName = get("appName", "Jennys AI");
+  let appName = get("appName", "Kosmiska Katten");
+  if (appName === "Jennys AI") { appName = "Kosmiska Katten"; set("appName",appName); }
   let password = get("password", "");
   let busy = false;
   let aiReady = false;
@@ -186,16 +216,42 @@ h1 { font:normal 25px Georgia,serif; margin:2px 0 0; letter-spacing:-.5px; }
     clearTimeout(toastTimer); toastTimer=setTimeout(()=>t.classList.remove("show"),3200);
   }
   function save() { set("messages",messages.slice(-60)); set("memories", memories.slice(-40)); }
+  function renderFormattedText(host, source) {
+    // Small, safe Markdown subset: only DOM text nodes, never HTML from the model.
+    const lines=String(source).split(/\r?\n/);
+    for (const original of lines) {
+      const line=document.createElement("div");
+      line.className="reply-line";
+      let str=original;
+      const heading=str.match(/^\s*#{1,3}\s+(.+)$/);
+      if(heading){str=heading[1];line.classList.add("reply-heading");}
+      const bullet=str.match(/^\s*[-*]\s+(.+)$/);
+      if(bullet){str="• " + bullet[1];line.classList.add("reply-bullet");}
+      // Match **strong** first, then *emphasis*. Unmatched punctuation remains visible.
+      const tokens=/(\*\*([^*\n]+)\*\*|\*([^*\n]+)\*)/g;
+      let last=0, match;
+      while ((match=tokens.exec(str)) !== null) {
+        if(match.index>last)line.append(document.createTextNode(str.slice(last,match.index)));
+        const el=document.createElement(match[2]!==undefined?"strong":"em");
+        el.textContent=match[2]!==undefined?match[2]:match[3];
+        line.append(el); last=match.index+match[0].length;
+      }
+      if(last<str.length)line.append(document.createTextNode(str.slice(last)));
+      if(!str)line.classList.add("reply-blank");
+      host.append(line);
+    }
+  }
   function renderMessages(){
     const host=el("messages"); host.replaceChildren();
     messages.forEach((m)=>{
       const wrapper=document.createElement("div"); wrapper.className="message "+m.role;
       const who=document.createElement("span"); who.className="who"; who.textContent=m.role==="user"?"Du":appName;
-      const bubble=document.createElement("div"); bubble.className="bubble"; bubble.textContent=m.content;
+      const bubble=document.createElement("div"); bubble.className="bubble"; renderFormattedText(bubble,m.content);
       wrapper.append(who,bubble); host.appendChild(wrapper);
     });
     if(messages.length>0)el("suggestions").hidden=true;
     else el("suggestions").hidden=false;
+    el("greeting").hidden = messages.length > 0;
     el("chat-view").scrollTop=el("chat-view").scrollHeight;
   }
   function renderMemories(){
@@ -264,7 +320,7 @@ h1 { font:normal 25px Georgia,serif; margin:2px 0 0; letter-spacing:-.5px; }
   document.querySelectorAll(".suggestion").forEach(b=>b.addEventListener("click",()=>sendMessage(b.dataset.prompt)));
   el("memory-form").addEventListener("submit",e=>{e.preventDefault();const txt=el("new-memory").value;if(addMemory(txt)){el("new-memory").value="";toast("Minnet är sparat 💚");}else toast("Skriv ett nytt minne först");});
   el("assistant-name").value=appName;
-  el("assistant-name").addEventListener("change",e=>{appName=e.target.value.trim()||"Jennys AI";set("appName",appName);el("app-title").textContent=appName;document.title=appName;renderMessages();toast("Namnet är sparat!");});
+  el("assistant-name").addEventListener("change",e=>{appName=e.target.value.trim()||"Kosmiska Katten";set("appName",appName);el("app-title").textContent=appName;document.title=appName;renderMessages();toast("Namnet är sparat!");});
   el("access-password").value=password;
   function updateBadges(){
     el("connection-badge").textContent = aiReady ? (password ? "AI redo" : "Ange appkod") : "Testläge";
@@ -294,7 +350,7 @@ h1 { font:normal 25px Georgia,serif; margin:2px 0 0; letter-spacing:-.5px; }
       if(!confirm("Vill du ersätta befintlig chatthistorik och minnen med innehållet i säkerhetskopian?"))return;
       messages=data.messages.filter(m=>["user","assistant"].includes(m.role)&&typeof m.content==="string").slice(-60).map(m=>({role:m.role,content:m.content.slice(0,6000)}));
       memories=data.memories.filter(x=>typeof x==="string").slice(0,40).map(x=>x.slice(0,350));
-      appName=typeof data.appName==="string"?data.appName.slice(0,28):"Jennys AI";
+      appName=typeof data.appName==="string"?data.appName.slice(0,28):"Kosmiska Katten";
       set("appName",appName);el("app-title").textContent=appName;el("assistant-name").value=appName;
       save();renderMessages();renderMemories();toast("Säkerhetskopian är inläst!");
     }catch(err){toast(err.message||"Kunde inte läsa filen");}
