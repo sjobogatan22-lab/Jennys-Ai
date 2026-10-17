@@ -4,6 +4,20 @@
  * Denna fil ersätter ENDAST den tidigare _worker.js.
  */
 const MODEL='@cf/google/gemma-4-26b-a4b-it';
+// Kattens syateljé – bilder byggda enbart på plaggval och färg, aldrig kroppsmått.
+const IMAGE_MODEL='@cf/black-forest-labs/flux-1-schnell';
+const IMAGE_GARMENTS={
+  top:'a simple elegant sleeveless woven camisole top with a V neckline, slightly relaxed fit, subtle hem stitching',
+  skirt:'a simple elegant straight skirt with a comfortable elastic waistband, softly draped, knee to midi length'
+};
+const IMAGE_COLORS={
+  olive:'muted olive green',
+  blue:'rich royal blue',
+  cream:'warm light beige',
+  red:'deep burgundy red',
+  black:'classic black'
+};
+
 // Wikimedia Action API stöder origin=* för anonyma webbläsarsökningar.
 const BROWSER_WIKI_BRIDGE="<script>(function(){\n\"use strict\";\n// Kostnadsfri Wikimedia-sökning i BESÖKARENS webbläsare, inte via Cloudflares utgående nätverk.\n// Skicka enbart en kort, ofarlig offentlig fråga. Aldrig appkod, minnen eller historik.\nconst nativeFetch=window.fetch.bind(window);\nconst blocked=/\\b(?:personnummer|samordningsnummer|bankkonton?|kontonummer|lösenord|inloggning|adress|telefonnummer|sjukdom|diagnos|journal|medicin|läkemedel|sjukskrivning|sexliv|privata meddelanden|hemligt)\\b|@|https?:\\/\\/|\\d{6}[-+]\\d{4}/i;\nfunction searchable(input){\n  if(typeof input!==\"string\"||input.length>250||/[\\r\\n]/.test(input)||blocked.test(input))return null;\n  if(/^(?:kom ihåg|vad minns du|vad vet du om mig|vem är jag|mina minnen)\\b/i.test(input))return null;\n  const explicit=/\\b(?:sök|googla|leta upp|kolla upp|webbsök|hitta källor|källa|källor|på nätet|på internet|wikipedia)\\b/i.test(input);\n  const recipe=/\\b(?:recept|raggmunk|pannkakor|matlagning|ingredienser)\\b/i.test(input);\n  const facts=/^(?:vad (?:är|betyder|hände)|vem (?:är|var)|när (?:föddes|dog|upptäcktes)|förklara|berätta om|hur fungerar|vilket år|varför finns)\\b/i.test(input);\n  if(!explicit&&!recipe&&!facts)return null;\n  let q=input.trim()\n    .replace(/^(?:kan du |skulle du kunna |snälla )?/i,\"\")\n    .replace(/^(?:sök(?:a)?|googla|leta upp|kolla upp|webbsök|hitta källor)(?:\\s+(?:på|om|efter|från)\\s+(?:nätet|internet|wikipedia|webben))?\\s*:?\\s*/i,\"\")\n    .replace(/^(?:ge mig|hitta|jag vill ha|visa)\\s+(?:ett |en )?(?:traditionellt |klassiskt |svenskt )*(?:recept(?:et)?\\s+(?:på|för|till)\\s+)?/i,\"\")\n    .replace(/^(?:vad är|vem är|vem var|förklara|berätta om)\\s+/i,\"\")\n    .replace(/\\s+(?:för|till)\\s+(?:fyra|4|två|2|sex|6)\\s+personer\\b.*$/i,\"\")\n    .replace(/[?!.,]+$/,\"\").trim().replace(/^(?:en|ett)\\s+/i,\"\")\n    .replace(/\\s+(?:tack|snälla)\\s*$/i,\"\").trim();\n  if(recipe)q=q.replace(/^(?:recept(?:et)?\\s+(?:på|för)\\s+)/i,\"\")\n    .replace(/\\s+med fläsk$/i,\"\").trim();\n  return q.length>=3?{query:q.slice(0,120),type:recipe?\"recipes\":\"facts\"}:null;\n}\nfunction cleanSnippet(value){\n  return String(value||\"\").replace(/<[^>]*>/g,\" \").replace(/&nbsp;/g,\" \")\n    .replace(/&quot;/g,'\"').replace(/&#39;|&apos;/g,\"'\")\n    .replace(/&amp;/g,\"&\").replace(/&lt;/g,\"<\").replace(/&gt;/g,\">\")\n    .replace(/\\s+/g,\" \").trim().slice(0,500);\n}\nasync function searchWiki(spec){\n  const host=spec.type===\"recipes\"?\"sv.wikibooks.org\":\"sv.wikipedia.org\";\n  const endpoint=new URL(\"https://\"+host+\"/w/api.php\");\n  Object.entries({action:\"query\",list:\"search\",srsearch:spec.query,srlimit:\"3\",\n    srprop:\"snippet\",format:\"json\",formatversion:\"2\",origin:\"*\"})\n    .forEach(([k,v])=>endpoint.searchParams.set(k,v));\n  const ctrl=new AbortController(),timer=setTimeout(()=>ctrl.abort(),7000);\n  try{\n    const response=await nativeFetch(endpoint.toString(),{\n      method:\"GET\",mode:\"cors\",credentials:\"omit\",signal:ctrl.signal,\n      headers:{Accept:\"application/json\"}\n    });\n    if(!response.ok)return {status:response.status===429?\"rate-limited\":\"unavailable\",sources:[]};\n    const payload=await response.json();\n    if(!Array.isArray(payload?.query?.search))return {status:\"unavailable\",sources:[]};\n    const sources=payload.query.search.map(item=>{\n      const title=String(item?.title||\"\").trim().slice(0,150);\n      const snippet=cleanSnippet(item?.snippet);\n      return title&&snippet?{title,snippet}:null;\n    }).filter(Boolean).slice(0,3);\n    return {status:sources.length?\"found\":\"no-results\",sources};\n  }catch{return {status:\"unavailable\",sources:[]};}\n  finally{clearTimeout(timer);}\n}\nwindow.fetch=async function(input,init){\n  // Intercept only the app's normal chat POST; never interfere with assets or AI status.\n  const url=typeof input===\"string\"?input:(input instanceof URL?input.href:\"\");\n  if(url!==\"/api/chat\"||!init||String(init.method||\"\").toUpperCase()!==\"POST\"||typeof init.body!==\"string\"){\n    return nativeFetch(input,init);\n  }\n  try{\n    const body=JSON.parse(init.body);\n    const messages=body.messages;\n    const last=Array.isArray(messages)?messages[messages.length-1]?.content:null;\n    const spec=searchable(last);\n    if(!spec)return nativeFetch(input,init);\n    const wiki=await searchWiki(spec);\n    body.browserWikiAttempted=true;\n    body.browserWikiStatus=wiki.status;\n    body.browserWikiSources=wiki.sources;\n    return nativeFetch(input,{...init,body:JSON.stringify(body)});\n  }catch{return nativeFetch(input,init);}\n};\n})();</script>";
 const HTTP_HEADERS={
@@ -204,6 +218,63 @@ export default {
     if(url.pathname==='/api/status'){
       if(request.method!=='GET')return json({error:'Metoden stöds inte.'},405);
       return json({ready:configured(env)});
+    }
+    // Inspirationsbilder. Detta anrop görs bara när användaren trycker på bildknappen.
+    // Samma appkod krävs som för chatten. Inga mått, minnen eller chattar skickas.
+    if(url.pathname==='/api/sew-image'){
+      if(request.method!=='POST')return json({error:'Metoden stöds inte.'},405);
+      if(!configured(env))return json({error:'AI-motorn är inte färdigkonfigurerad.'},503);
+      const origin=request.headers.get('Origin');
+      if(origin&&origin!==url.origin)return json({error:'Begäran är inte tillåten.'},403);
+      if(!matchesSecret(request.headers.get('x-app-password')||'',env.APP_PASSWORD))
+        return json({error:'Fel appkod. Kontrollera Inställningar.'},401);
+      if(!(request.headers.get('content-type')||'').toLowerCase().includes('application/json'))
+        return json({error:'Begäran måste vara JSON.'},415);
+      if(Number(request.headers.get('content-length')||0)>2048)
+        return json({error:'Begäran är för stor.'},413);
+      let selection;
+      try{
+        const raw=await request.text();
+        if(raw.length>2048)return json({error:'Begäran är för stor.'},413);
+        selection=JSON.parse(raw);
+      }catch{return json({error:'Kunde inte läsa plaggvalet.'},400);}
+      const garment=selection?.garment, color=selection?.color;
+      if(typeof garment!=='string'||!Object.hasOwn(IMAGE_GARMENTS,garment)||
+         typeof color!=='string'||!Object.hasOwn(IMAGE_COLORS,color))
+        return json({error:'Välj ett giltigt plagg och en färg.'},400);
+      const prompt='A high quality, tasteful realistic fashion product photograph of '+
+        IMAGE_GARMENTS[garment]+' made from beautiful '+IMAGE_COLORS[color]+
+        ' fabric. Display on a neutral dress form, front view, full garment visible, '+
+        'warm daylight, refined heritage sewing atelier, subtle linen background, '+
+        'fine fabric texture, natural drape, polished professional styling. '+
+        'One garment only. No text, no labels, no logos, no watermark.';
+      try{
+        const result=await env.AI.run(IMAGE_MODEL,{prompt,steps:4});
+        // Cloudflares FLUX.1 Schnell returnerar JPEG som base64 i resultatets image-fält.
+        const base64=result?.image;
+        if(typeof base64!=='string'||!base64.length||base64.length>12000000)
+          return json({error:'Bildmotorn gav inget giltigt bildresultat.'},502);
+        let bytes;
+        try{
+          const decoded=atob(base64);
+          bytes=Uint8Array.from(decoded,ch=>ch.charCodeAt(0));
+          // Verifiera att det är JPEG innan den skickas till webbläsaren.
+          if(bytes.length<4||bytes[0]!==0xff||bytes[1]!==0xd8||bytes[2]!==0xff)
+            return json({error:'Bildmotorn skickade ett oväntat bildformat.'},502);
+        }catch{return json({error:'Kunde inte läsa bildresultatet.'},502);}
+        return new Response(bytes,{status:200,headers:{
+          'Content-Type':'image/jpeg',
+          'Cache-Control':'no-store',
+          'Content-Disposition':'inline; filename="kattens-plaggbild.jpg"',
+          'X-Content-Type-Options':'nosniff',
+          'Referrer-Policy':'no-referrer'
+        }});
+      }catch(error){
+        const detail=String(error?.message||'');
+        if(/429|quota|limit|neurons|exceeded|capacity|3040|rate/i.test(detail))
+          return json({error:'Cloudflares fria AI-kvot eller tillgängliga kapacitet räcker inte just nu. Försök senare.'},429);
+        return json({error:'Bildmotorn kunde inte skapa bilden just nu. Försök igen senare.'},503);
+      }
     }
     if(url.pathname==='/api/chat'){
       if(request.method!=='POST')return json({error:'Metoden stöds inte.'},405);
