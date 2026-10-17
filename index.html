@@ -54,6 +54,7 @@ h1 { font:normal 25px Georgia,serif; margin:2px 0 0; letter-spacing:-.5px; }
 .nav { border:0; background:none; display:flex; flex-direction:column; align-items:center; gap:2px; flex:1; color:#93978f; font-size:10px; }
 .nav-icon { font-size:24px; line-height:28px; }
 .nav.active { color:var(--olive-dark); font-weight:700; }
+.nav.atelier-link { text-decoration:none; }
 .section-heading { padding:27px 4px 19px; }
 .section-heading h2 { margin:7px 0 10px; }
 .section-heading h2 span { color:var(--accent); }
@@ -211,6 +212,7 @@ h1 { font:normal 25px Georgia,serif; margin:2px 0 0; letter-spacing:-.5px; }
     <nav class="bottom-nav" aria-label="Huvudmeny">
       <button type="button" data-view="chat" class="nav active"><span class="nav-icon" aria-hidden="true">✉</span><span>Chatt</span></button>
       <button type="button" data-view="memory" class="nav"><span class="nav-icon" aria-hidden="true">♡</span><span>Minnen</span></button>
+      <a href="./syatelje.html" class="nav atelier-link" aria-label="Öppna Kattens syateljé"><span class="nav-icon" aria-hidden="true">✂️</span><span>Syateljé</span></a>
       <button type="button" data-view="settings" class="nav"><span class="nav-icon" aria-hidden="true">⚙</span><span>Inställningar</span></button>
     </nav>
     <div id="toast" class="toast" role="status" aria-live="polite"></div>
@@ -313,7 +315,7 @@ h1 { font:normal 25px Georgia,serif; margin:2px 0 0; letter-spacing:-.5px; }
   }
   function showView(which){
     document.querySelectorAll(".view").forEach(view=>view.classList.toggle("active",view.id===which+"-view"));
-    document.querySelectorAll(".nav").forEach(b=>b.classList.toggle("active",b.dataset.view===which));
+    document.querySelectorAll(".bottom-nav button[data-view]").forEach(b=>b.classList.toggle("active",b.dataset.view===which));
     el("composer").style.display=which==="chat"?"flex":"none";
   }
   function offlineReply(question){
@@ -359,7 +361,7 @@ h1 { font:normal 25px Georgia,serif; margin:2px 0 0; letter-spacing:-.5px; }
       messages.push({role:"assistant",content:"Det gick inte att kontakta AI:n just nu. "+msg+"\n\nDina minnen är fortfarande sparade på telefonen."});save();renderMessages();
     } finally {busy=false;el("send-button").disabled=false;el("message-input").focus();}
   }
-  document.querySelectorAll(".nav").forEach(b=>b.addEventListener("click",()=>showView(b.dataset.view)));
+  document.querySelectorAll(".bottom-nav button[data-view]").forEach(b=>b.addEventListener("click",()=>showView(b.dataset.view)));
   el("composer").addEventListener("submit",e=>{e.preventDefault();sendMessage(el("message-input").value);});
   el("message-input").addEventListener("keydown",e=>{if(e.key==="Enter"&&!e.shiftKey){e.preventDefault();el("composer").requestSubmit();}});
   document.querySelectorAll(".suggestion").forEach(b=>b.addEventListener("click",()=>sendMessage(b.dataset.prompt)));
