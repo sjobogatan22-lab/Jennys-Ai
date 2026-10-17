@@ -11,7 +11,7 @@
 main{max-width:720px;margin:auto;min-height:100vh;background:var(--cream);padding:20px 20px 50px}header{display:flex;align-items:center;justify-content:space-between;gap:12px;border-bottom:1px solid var(--line);padding-bottom:17px}
 .back{color:var(--olive);font-weight:650;text-decoration:none;font-size:15px}h1{margin:18px 0 8px;font:normal 32px Georgia,serif}h2{margin:3px 0 13px;font:normal 24px Georgia,serif}.eyebrow{font-size:11px;letter-spacing:2px;font-weight:800;color:#7a886f}.intro{color:#667361;line-height:1.55;max-width:580px}
 .card{background:white;border:1px solid var(--line);border-radius:23px;padding:19px;margin:18px 0;box-shadow:0 3px 13px #00000007}.fields{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:14px}label{display:block;font-size:13px;font-weight:680;color:#465340}input,select{width:100%;min-width:0;margin:6px 0 0;padding:11px;border:1px solid #cfd4c9;border-radius:11px;background:white;font:inherit;color:#253020}select{appearance:auto}input:focus,select:focus{outline:2px solid #b1c2a4}
-button{border:0;border-radius:13px;padding:13px 16px;font:inherit;font-weight:700;cursor:pointer}.primary{background:var(--olive);color:white}.secondary{background:#e8efe3;color:#33472f}.actions{display:flex;flex-wrap:wrap;gap:9px;margin-top:18px}.actions button{flex:1 1 180px}.note{line-height:1.5;font-size:13px;color:#71776c}.preview{display:grid;grid-template-columns:minmax(0,1fr) minmax(0,1fr);gap:15px;align-items:center}.fashion{background:#f5f0e6;border-radius:17px;padding:8px;text-align:center;min-width:0}.fashion svg{width:100%;height:290px}.placeholder{border:1px dashed #b5bdaa;min-height:290px;border-radius:15px;display:flex;align-items:center;justify-content:center;text-align:center;color:#74816e;padding:12px}.generated{width:100%;border-radius:15px;display:none}.status{margin:9px 0 0;font-size:13px;color:#4c5e45;line-height:1.5}.pattern-info{line-height:1.55;font-size:14px}.pattern-info ul{padding-left:19px}.download{display:none;margin-top:12px;text-decoration:none;text-align:center}.warning{background:#f5f0e5;padding:12px;border-radius:12px;font-size:13px;line-height:1.5}.foot{font-size:12px;color:#818576;margin-top:22px}
+button{border:0;border-radius:13px;padding:13px 16px;font:inherit;font-weight:700;cursor:pointer}.primary{background:var(--olive);color:white}.secondary{background:#e8efe3;color:#33472f}.actions{display:flex;flex-wrap:wrap;gap:9px;margin-top:18px}.actions button{flex:1 1 180px}.pdf-download{display:none;flex:1 1 180px;text-align:center;text-decoration:none;background:#e8efe3;color:#33472f;border-radius:13px;padding:13px 16px;font-weight:700}.pdf-download.visible{display:block}.note{line-height:1.5;font-size:13px;color:#71776c}.preview{display:grid;grid-template-columns:minmax(0,1fr) minmax(0,1fr);gap:15px;align-items:center}.fashion{background:#f5f0e6;border-radius:17px;padding:8px;text-align:center;min-width:0}.fashion svg{width:100%;height:290px}.placeholder{border:1px dashed #b5bdaa;min-height:290px;border-radius:15px;display:flex;align-items:center;justify-content:center;text-align:center;color:#74816e;padding:12px}.generated{width:100%;border-radius:15px;display:none}.status{margin:9px 0 0;font-size:13px;color:#4c5e45;line-height:1.5}.pattern-info{line-height:1.55;font-size:14px}.pattern-info ul{padding-left:19px}.download{display:none;margin-top:12px;text-decoration:none;text-align:center}.warning{background:#f5f0e5;padding:12px;border-radius:12px;font-size:13px;line-height:1.5}.foot{font-size:12px;color:#818576;margin-top:22px}
 #printArea{display:none}@media(max-width:510px){main{padding:17px 15px 35px}.fields{gap:11px}.card{padding:15px}.fashion svg{height:245px}.placeholder{min-height:245px}.preview{gap:8px}}
 @media print{@page{size:A4;margin:0}body{margin:0;background:#fff}main{display:none!important}#printArea{display:block!important}.sheet{width:210mm;height:297mm;padding:10mm;position:relative;overflow:hidden;page-break-after:always;break-after:page}.sheet:last-child{page-break-after:auto;break-after:auto}.tile{width:190mm;height:267mm;display:block}.sheet-tag{position:absolute;left:10mm;top:2mm;font:10px Arial,sans-serif;color:#222}.sheet.intro-sheet{font-family:Arial,sans-serif;padding:16mm}.intro-sheet h2{font-size:23px}.intro-sheet p,.intro-sheet li{font-size:13px;line-height:1.4}}
 </style>
@@ -40,7 +40,7 @@ button{border:0;border-radius:13px;padding:13px 16px;font:inherit;font-weight:70
 <p class="note">Bilden visar en idé, inte ett exakt bevis på hur mönstret kommer sitta. Mönstret beräknas separat från bilden.</p>
 </section>
 <section class="card"><h2>3. Skriv ut ditt mönster</h2><div id="instructions" class="pattern-info"></div>
-<div class="actions"><button type="button" id="print" class="primary">🖨️ Skriv ut A4-mönstret</button></div>
+<div class="actions"><button type="button" id="print" class="primary">📄 Skapa utskrivbar A4-PDF</button><a id="savePdf" class="pdf-download" download="kattens-monster-A4.pdf" href="#" target="_blank" rel="noopener">↓ Öppna eller spara PDF</a></div><p class="note" id="pdfStatus" role="status">PDF-filen får exakt det antal A4-sidor som anges ovan och kan öppnas på iPhone eller dator.</p>
 <div class="warning" style="margin-top:14px"><strong>Viktigt:</strong> Skriv ut i <strong>100 % / faktisk storlek</strong>, utan ”anpassa till sida”. Kontrollera kontrollrutan på 5 × 5 cm. Sy ett provplagg i billigt tyg först, framför allt om du väljer linnet. Dessa är förenklade grundmönster, inte professionellt passformsgraderade modeller.</div>
 </section>
 <p class="foot">Kosmiska Katten · Skapad och utvecklad av Jenny Hellgren · Modellbilder genereras vid behov med Cloudflare Workers AI inom kontots användningsgränser.</p>
@@ -108,7 +108,167 @@ $('saveSketch').addEventListener('click',()=>{
   const u=URL.createObjectURL(blob),a=document.createElement('a');
   a.href=u;a.download='kattens-plaggskiss.svg';a.click();setTimeout(()=>URL.revokeObjectURL(u),2000);
 });
-$('print').addEventListener('click',()=>{if(update())window.print();});
+
+// Fix iPhone AirPrint: create a fixed-size PDF locally instead of relying on Safari page breaks.
+// Each image is placed into a real PDF A4 page with MediaBox exactly 210 x 297 mm.
+const PDF_DPI=200,PDF_W_MM=210,PDF_H_MM=297,PDF_TILE_W=190,PDF_TILE_H=267;
+const pdfScale=PDF_DPI/25.4;
+let lastPdfUrl=null;
+function pdfWhite(ctx,canvas){
+  ctx.setTransform(1,0,0,1,0,0);
+  ctx.fillStyle='#fff';ctx.fillRect(0,0,canvas.width,canvas.height);
+  ctx.setTransform(pdfScale,0,0,pdfScale,0,0);
+  ctx.fillStyle='#111';ctx.strokeStyle='#111';
+}
+function pdfLines(ctx,body,x,y,maxWidth,step=5){
+  const words=String(body).split(/\s+/);
+  let line='';
+  for(const word of words){
+    const next=line?line+' '+word:word;
+    if(line && ctx.measureText(next).width>maxWidth){
+      ctx.fillText(line,x,y);y+=step;line=word;
+    }else line=next;
+  }
+  if(line){ctx.fillText(line,x,y);y+=step;}
+  return y;
+}
+function jpegBytes(canvas){
+  const data=canvas.toDataURL('image/jpeg',0.91);
+  if(!data.startsWith('data:image/jpeg;base64,'))throw Error('Kunde inte skapa PDF-bilden.');
+  const binary=atob(data.slice('data:image/jpeg;base64,'.length));
+  const out=new Uint8Array(binary.length);
+  for(let i=0;i<binary.length;i++)out[i]=binary.charCodeAt(i);
+  return out;
+}
+function makePdfFromJpegs(images,width,height){
+  const encoder=new TextEncoder(),fragments=[],offsets=[0];
+  let length=0;
+  function write(v){
+    const b=typeof v==='string'?encoder.encode(v):v;
+    fragments.push(b);length+=b.length;
+  }
+  function object(id,...chunks){
+    offsets[id]=length;
+    write(id+' 0 obj\n');
+    for(const item of chunks)write(item);
+    write('\nendobj\n');
+  }
+  const pt=n=>(n*72/25.4).toFixed(5);
+  const pw=pt(PDF_W_MM),ph=pt(PDF_H_MM);
+  const kids=images.map((_,i)=>(3+3*i)+' 0 R').join(' ');
+  write('%PDF-1.4\n%Kattens syatelje - A4 print\n');
+  object(1,'<< /Type /Catalog /Pages 2 0 R >>');
+  object(2,'<< /Type /Pages /Kids [ '+kids+' ] /Count '+images.length+' >>');
+  images.forEach((jpg,i)=>{
+    const pageId=3+i*3,imgId=pageId+1,contentsId=pageId+2;
+    const instructions='q\n'+pw+' 0 0 '+ph+' 0 0 cm\n/I0 Do\nQ\n';
+    object(pageId,'<< /Type /Page /Parent 2 0 R /MediaBox [0 0 '+pw+' '+ph+
+      '] /Resources << /XObject << /I0 '+imgId+' 0 R >> >> /Contents '+contentsId+' 0 R >>');
+    object(imgId,'<< /Type /XObject /Subtype /Image /Width '+width+' /Height '+height+
+      ' /ColorSpace /DeviceRGB /BitsPerComponent 8 /Filter /DCTDecode /Length '+jpg.length+
+      ' >>\nstream\n',jpg,'\nendstream');
+    object(contentsId,'<< /Length '+encoder.encode(instructions).length+' >>\nstream\n',
+      instructions,'endstream');
+  });
+  const xrefStart=length;
+  write('xref\n0 '+(3+images.length*3)+'\n');
+  write('0000000000 65535 f \n');
+  for(let i=1;i<3+images.length*3;i++)write(String(offsets[i]).padStart(10,'0')+' 00000 n \n');
+  write('trailer\n<< /Root 1 0 R /Size '+(3+images.length*3)+' >>\nstartxref\n'+xrefStart+'\n%%EOF\n');
+  return new Blob(fragments,{type:'application/pdf'});
+}
+async function buildPatternPdf(d){
+  const p=pattern(d),cols=Math.ceil(p.width/PDF_TILE_W),
+        rows=Math.ceil(p.height/PDF_TILE_H),numTiles=cols*rows;
+  if(numTiles>40)throw Error('Mönstret är för stort för den här PDF-filen.');
+  const pixelWidth=Math.round(PDF_W_MM*pdfScale),
+        pixelHeight=Math.round(PDF_H_MM*pdfScale);
+  const canvas=document.createElement('canvas');
+  canvas.width=pixelWidth;canvas.height=pixelHeight;
+  const ctx=canvas.getContext('2d',{alpha:false});
+  if(!ctx)throw Error('Kunde inte starta PDF-ritningen.');
+  const images=[];
+  pdfWhite(ctx,canvas);
+  ctx.fillStyle='#111';ctx.font='bold 6px Georgia,serif';
+  ctx.fillText(p.title,16,24);
+  ctx.font='3.8px Arial,sans-serif';
+  let y=35;
+  y=pdfLines(ctx,'Personliga mått: byst '+d.bust+' cm, midja '+d.waist+
+      ' cm, stuss '+d.hip+' cm, plagglängd '+d.length+' cm.',16,y,178,6);
+  y+=5;
+  y=pdfLines(ctx,'Skriv ut som A4, 100 % / faktisk storlek. Välj inte '+
+      'anpassa till sida. Börja med att skriva ut endast detta kontrollblad.',16,y,178,6);
+  ctx.strokeStyle='#111';ctx.lineWidth=.4;
+  ctx.strokeRect(22,72,50,50);
+  ctx.font='bold 3.5px Arial,sans-serif';
+  ctx.fillText('KONTROLLRUTA 5 × 5 cm',22,129);
+  ctx.font='3.8px Arial,sans-serif';
+  y=143;
+  y=pdfLines(ctx,'Mät kontrollrutan med linjal. Både höjd och bredd måste vara '+
+      'exakt 5 cm, annars är utskriften felaktigt skalad.',16,y,178,6);
+  y+=6;
+  y=pdfLines(ctx,'Antal mönstersidor: '+numTiles+' plus detta kontrollblad. '+
+      'Tejpa ihop fälten kant mot kant i '+cols+' kolumner och '+
+      rows+' rader. Varje mönstersida är märkt med rad och kolumn.',16,y,178,6);
+  y+=6;
+  y=pdfLines(ctx,d.garment==='skirt'
+      ?'Kjol: Sömsmån ingår i mönsterpanelen.'
+      :'Linne: Mönstret visar sömlinjer. Lägg till 1 cm sömsmån och 3 cm fåll. Gör ett provplagg innan du klipper fint tyg.',
+      16,y,178,6);
+  images.push(jpegBytes(canvas));
+  const svgText='<svg xmlns="http://www.w3.org/2000/svg" width="'+p.width+
+      'mm" height="'+p.height+'mm" viewBox="0 0 '+p.width+' '+p.height+'">'+p.svg+'</svg>';
+  const svgUrl=URL.createObjectURL(new Blob([svgText],{type:'image/svg+xml;charset=utf-8'}));
+  const source=new Image();
+  try{
+    await new Promise((resolve,reject)=>{
+      source.onload=resolve;
+      source.onerror=()=>reject(new Error('Kunde inte rita mönsterdelarna i PDF.'));
+      source.src=svgUrl;
+    });
+  }finally{URL.revokeObjectURL(svgUrl);}
+  for(let row=0;row<rows;row++)for(let col=0;col<cols;col++){
+    const n=row*cols+col+1;
+    pdfWhite(ctx,canvas);
+    ctx.font='2.7px Arial,sans-serif';ctx.fillStyle='#222';
+    ctx.fillText(p.title+' · sida '+n+'/'+numTiles+' · rad '+(row+1)+
+      ', kolumn '+(col+1)+' · A4 · 100 %',10,11);
+    ctx.save();
+    ctx.beginPath();ctx.rect(10,18,PDF_TILE_W,PDF_TILE_H);ctx.clip();
+    ctx.drawImage(source,10-col*PDF_TILE_W,18-row*PDF_TILE_H,p.width,p.height);
+    ctx.restore();
+    ctx.strokeStyle='#777';ctx.lineWidth=.22;
+    ctx.beginPath();
+    ctx.moveTo(10,23);ctx.lineTo(10,18);ctx.lineTo(15,18);
+    ctx.moveTo(195,18);ctx.lineTo(200,18);ctx.lineTo(200,23);
+    ctx.moveTo(10,280);ctx.lineTo(10,285);ctx.lineTo(15,285);
+    ctx.moveTo(195,285);ctx.lineTo(200,285);ctx.lineTo(200,280);
+    ctx.stroke();
+    images.push(jpegBytes(canvas));
+    await new Promise(resolve=>setTimeout(resolve,0));
+  }
+  canvas.width=1;canvas.height=1;
+  return {pdf:makePdfFromJpegs(images,pixelWidth,pixelHeight),pages:images.length};
+}
+$('print').addEventListener('click',async()=>{
+  const d=update();if(!d)return;
+  const btn=$('print'),link=$('savePdf'),status=$('pdfStatus');
+  btn.disabled=true;btn.textContent='⏳ Skapar A4-PDF ...';
+  link.classList.remove('visible');
+  status.textContent='Katten sammanställer mönstrets A4-sidor. Vänta ett ögonblick.';
+  try{
+    const file=await buildPatternPdf(d);
+    if(lastPdfUrl)URL.revokeObjectURL(lastPdfUrl);
+    lastPdfUrl=URL.createObjectURL(file.pdf);
+    link.href=lastPdfUrl;link.classList.add('visible');
+    status.textContent='Klart! PDF-filen innehåller '+file.pages+
+      ' A4-sidor, inklusive kontrollbladet. Tryck på ”Öppna eller spara PDF”. '+
+      'Skriv helst ut kontrollbladet först och mät rutan 5 × 5 cm.';
+  }catch(e){
+    status.textContent='Kunde inte skapa PDF: '+e.message;
+  }finally{btn.disabled=false;btn.textContent='📄 Skapa utskrivbar A4-PDF';}
+});
+
 $('picture').addEventListener('click',async()=>{
   const d=update();if(!d)return;
   const password=(()=>{try{return JSON.parse(localStorage.getItem('jennys-ai-v1:password')||'""');}catch{return '';}})();
@@ -125,7 +285,15 @@ $('picture').addEventListener('click',async()=>{
   }catch(e){$('status').textContent=e.name==='AbortError'?'Bildskapandet tog för lång tid. Försök igen.':e.message;}
   finally{btn.disabled=false;btn.textContent='✨ Skapa AI-bild';}
 });
-for(const id of ids)$(id).addEventListener('change',()=>{if(id==='garment'){$('length').value=$(id).value==='skirt'?65:65;} update();});
+for(const id of ids){
+  // Dölj PDF från tidigare mått så att fel storlek aldrig laddas ner.
+  const invalidate=()=>{
+    $('savePdf').classList.remove('visible');
+    $('pdfStatus').textContent='Måtten eller plagget har ändrats. Skapa en ny A4-PDF innan du skriver ut.';
+  };
+  $(id).addEventListener('input',invalidate);
+  $(id).addEventListener('change',()=>{invalidate();if(id==='garment'){$('length').value=65;} update();});
+}
 update();
 })();
 </script>
