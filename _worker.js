@@ -1,9 +1,11 @@
-/* Kosmiska Katten – Gemma 4 + tillförlitlig Wikimedia-koppling
+/* Kosmiska Katten – Gemma 4 + Wikimedia-sökning via webbläsare + serverfallback
  * Utvecklad av Jenny Hellgren med AI som kodhjälp.
  * Cloudflare Pages Direct Upload: kräver befintliga ASSETS, AI och APP_PASSWORD.
  * Denna fil ersätter ENDAST den tidigare _worker.js.
  */
 const MODEL='@cf/google/gemma-4-26b-a4b-it';
+// Wikimedia Action API stöder origin=* för anonyma webbläsarsökningar.
+const BROWSER_WIKI_BRIDGE="<script>(function(){\n\"use strict\";\n// Kostnadsfri Wikimedia-sökning i BESÖKARENS webbläsare, inte via Cloudflares utgående nätverk.\n// Skicka enbart en kort, ofarlig offentlig fråga. Aldrig appkod, minnen eller historik.\nconst nativeFetch=window.fetch.bind(window);\nconst blocked=/\\b(?:personnummer|samordningsnummer|bankkonton?|kontonummer|lösenord|inloggning|adress|telefonnummer|sjukdom|diagnos|journal|medicin|läkemedel|sjukskrivning|sexliv|privata meddelanden|hemligt)\\b|@|https?:\\/\\/|\\d{6}[-+]\\d{4}/i;\nfunction searchable(input){\n  if(typeof input!==\"string\"||input.length>250||/[\\r\\n]/.test(input)||blocked.test(input))return null;\n  if(/^(?:kom ihåg|vad minns du|vad vet du om mig|vem är jag|mina minnen)\\b/i.test(input))return null;\n  const explicit=/\\b(?:sök|googla|leta upp|kolla upp|webbsök|hitta källor|källa|källor|på nätet|på internet|wikipedia)\\b/i.test(input);\n  const recipe=/\\b(?:recept|raggmunk|pannkakor|matlagning|ingredienser)\\b/i.test(input);\n  const facts=/^(?:vad (?:är|betyder|hände)|vem (?:är|var)|när (?:föddes|dog|upptäcktes)|förklara|berätta om|hur fungerar|vilket år|varför finns)\\b/i.test(input);\n  if(!explicit&&!recipe&&!facts)return null;\n  let q=input.trim()\n    .replace(/^(?:kan du |skulle du kunna |snälla )?/i,\"\")\n    .replace(/^(?:sök(?:a)?|googla|leta upp|kolla upp|webbsök|hitta källor)(?:\\s+(?:på|om|efter|från)\\s+(?:nätet|internet|wikipedia|webben))?\\s*:?\\s*/i,\"\")\n    .replace(/^(?:ge mig|hitta|jag vill ha|visa)\\s+(?:ett |en )?(?:traditionellt |klassiskt |svenskt )*(?:recept(?:et)?\\s+(?:på|för|till)\\s+)?/i,\"\")\n    .replace(/^(?:vad är|vem är|vem var|förklara|berätta om)\\s+/i,\"\")\n    .replace(/\\s+(?:för|till)\\s+(?:fyra|4|två|2|sex|6)\\s+personer\\b.*$/i,\"\")\n    .replace(/[?!.,]+$/,\"\").trim().replace(/^(?:en|ett)\\s+/i,\"\")\n    .replace(/\\s+(?:tack|snälla)\\s*$/i,\"\").trim();\n  if(recipe)q=q.replace(/^(?:recept(?:et)?\\s+(?:på|för)\\s+)/i,\"\")\n    .replace(/\\s+med fläsk$/i,\"\").trim();\n  return q.length>=3?{query:q.slice(0,120),type:recipe?\"recipes\":\"facts\"}:null;\n}\nfunction cleanSnippet(value){\n  return String(value||\"\").replace(/<[^>]*>/g,\" \").replace(/&nbsp;/g,\" \")\n    .replace(/&quot;/g,'\"').replace(/&#39;|&apos;/g,\"'\")\n    .replace(/&amp;/g,\"&\").replace(/&lt;/g,\"<\").replace(/&gt;/g,\">\")\n    .replace(/\\s+/g,\" \").trim().slice(0,500);\n}\nasync function searchWiki(spec){\n  const host=spec.type===\"recipes\"?\"sv.wikibooks.org\":\"sv.wikipedia.org\";\n  const endpoint=new URL(\"https://\"+host+\"/w/api.php\");\n  Object.entries({action:\"query\",list:\"search\",srsearch:spec.query,srlimit:\"3\",\n    srprop:\"snippet\",format:\"json\",formatversion:\"2\",origin:\"*\"})\n    .forEach(([k,v])=>endpoint.searchParams.set(k,v));\n  const ctrl=new AbortController(),timer=setTimeout(()=>ctrl.abort(),7000);\n  try{\n    const response=await nativeFetch(endpoint.toString(),{\n      method:\"GET\",mode:\"cors\",credentials:\"omit\",signal:ctrl.signal,\n      headers:{Accept:\"application/json\"}\n    });\n    if(!response.ok)return {status:response.status===429?\"rate-limited\":\"unavailable\",sources:[]};\n    const payload=await response.json();\n    if(!Array.isArray(payload?.query?.search))return {status:\"unavailable\",sources:[]};\n    const sources=payload.query.search.map(item=>{\n      const title=String(item?.title||\"\").trim().slice(0,150);\n      const snippet=cleanSnippet(item?.snippet);\n      return title&&snippet?{title,snippet}:null;\n    }).filter(Boolean).slice(0,3);\n    return {status:sources.length?\"found\":\"no-results\",sources};\n  }catch{return {status:\"unavailable\",sources:[]};}\n  finally{clearTimeout(timer);}\n}\nwindow.fetch=async function(input,init){\n  // Intercept only the app's normal chat POST; never interfere with assets or AI status.\n  const url=typeof input===\"string\"?input:(input instanceof URL?input.href:\"\");\n  if(url!==\"/api/chat\"||!init||String(init.method||\"\").toUpperCase()!==\"POST\"||typeof init.body!==\"string\"){\n    return nativeFetch(input,init);\n  }\n  try{\n    const body=JSON.parse(init.body);\n    const messages=body.messages;\n    const last=Array.isArray(messages)?messages[messages.length-1]?.content:null;\n    const spec=searchable(last);\n    if(!spec)return nativeFetch(input,init);\n    const wiki=await searchWiki(spec);\n    body.browserWikiAttempted=true;\n    body.browserWikiStatus=wiki.status;\n    body.browserWikiSources=wiki.sources;\n    return nativeFetch(input,{...init,body:JSON.stringify(body)});\n  }catch{return nativeFetch(input,init);}\n};\n})();</script>";
 const HTTP_HEADERS={
   'Cache-Control':'no-store','X-Content-Type-Options':'nosniff',
   'Referrer-Policy':'no-referrer'
@@ -220,7 +222,23 @@ export default {
         const last=messages[messages.length-1].content;
         // Endast senaste offentliga frågan skickas till Wikimedia. Aldrig minnen eller appkoden.
         const wikiRequest=getWikiQuery(last);
-        const wiki=await getWikiSources(wikiRequest),wikiSources=wiki.sources;
+        // Om webbläsaren redan har sökt via Wikipedias CORS-API behöver vi
+        // inte försöka igen från Cloudflares blockerade utgående anslutning.
+        let wiki;
+        if(wikiRequest && body.browserWikiAttempted===true){
+          const site=WIKI_SOURCES[wikiRequest.type];
+          const browserSources=Array.isArray(body.browserWikiSources)?body.browserWikiSources.slice(0,3):[];
+          const safeSources=browserSources.map(s=>{
+            const title=text(s?.title,150),snippet=stripWikiMarkup(s?.snippet);
+            if(!title||!snippet||title.length>150)return null;
+            return {title,snippet,site:site.name,
+              url:'https://'+site.host+'/wiki/'+encodeURIComponent(title.replace(/ /g,'_'))};
+          }).filter(Boolean);
+          const status=safeSources.length?'found':
+            (['no-results','rate-limited'].includes(body.browserWikiStatus)?body.browserWikiStatus:'unavailable');
+          wiki={status,sources:safeSources,reason:status==='unavailable'?'Webbläsarens Wikimedia-anrop misslyckades':''};
+        }else wiki=await getWikiSources(wikiRequest);
+        const wikiSources=wiki.sources;
         if(wikiRequest?.explicit&&!wikiSources.length){
           const note=wiki.status==='no-results'
             ?'Jag hittade ingen relevant artikel för sökningen.'
@@ -269,6 +287,14 @@ export default {
     }
     if(url.pathname.startsWith('/api/'))return json({error:'Okänd API-adress.'},404);
     if(!env?.ASSETS)return json({error:'Saknar Cloudflare ASSETS-binding.'},503);
-    return env.ASSETS.fetch(request);
+    const asset=await env.ASSETS.fetch(request);
+    // All befintlig design, chattlogik och localStorage förblir helt orörda.
+    // Det enda nya är ett kort skript som låter själva webbläsaren kontakta Wikimedia.
+    if(asset.ok && (asset.headers.get('content-type')||'').toLowerCase().includes('text/html')){
+      return new HTMLRewriter().on('head',{
+        element(element){element.append(BROWSER_WIKI_BRIDGE,{html:true});}
+      }).transform(asset);
+    }
+    return asset;
   }
 };
