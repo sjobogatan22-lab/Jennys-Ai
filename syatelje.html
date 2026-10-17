@@ -1,0 +1,133 @@
+<!doctype html>
+<html lang="sv">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
+<meta name="theme-color" content="#52634d">
+<title>Kattens syateljé – Kosmiska Katten</title>
+<style>
+:root{color-scheme:light;--olive:#52634d;--dark:#303d2c;--cream:#fbf8f1;--sand:#efe9dd;--line:#dedfd5}
+*{box-sizing:border-box}body{margin:0;background:#e7e7df;color:#30362e;font-family:-apple-system,BlinkMacSystemFont,"Segoe UI",sans-serif}
+main{max-width:720px;margin:auto;min-height:100vh;background:var(--cream);padding:20px 20px 50px}header{display:flex;align-items:center;justify-content:space-between;gap:12px;border-bottom:1px solid var(--line);padding-bottom:17px}
+.back{color:var(--olive);font-weight:650;text-decoration:none;font-size:15px}h1{margin:18px 0 8px;font:normal 32px Georgia,serif}h2{margin:3px 0 13px;font:normal 24px Georgia,serif}.eyebrow{font-size:11px;letter-spacing:2px;font-weight:800;color:#7a886f}.intro{color:#667361;line-height:1.55;max-width:580px}
+.card{background:white;border:1px solid var(--line);border-radius:23px;padding:19px;margin:18px 0;box-shadow:0 3px 13px #00000007}.fields{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:14px}label{display:block;font-size:13px;font-weight:680;color:#465340}input,select{width:100%;min-width:0;margin:6px 0 0;padding:11px;border:1px solid #cfd4c9;border-radius:11px;background:white;font:inherit;color:#253020}select{appearance:auto}input:focus,select:focus{outline:2px solid #b1c2a4}
+button{border:0;border-radius:13px;padding:13px 16px;font:inherit;font-weight:700;cursor:pointer}.primary{background:var(--olive);color:white}.secondary{background:#e8efe3;color:#33472f}.actions{display:flex;flex-wrap:wrap;gap:9px;margin-top:18px}.actions button{flex:1 1 180px}.note{line-height:1.5;font-size:13px;color:#71776c}.preview{display:grid;grid-template-columns:minmax(0,1fr) minmax(0,1fr);gap:15px;align-items:center}.fashion{background:#f5f0e6;border-radius:17px;padding:8px;text-align:center;min-width:0}.fashion svg{width:100%;height:290px}.placeholder{border:1px dashed #b5bdaa;min-height:290px;border-radius:15px;display:flex;align-items:center;justify-content:center;text-align:center;color:#74816e;padding:12px}.generated{width:100%;border-radius:15px;display:none}.status{margin:9px 0 0;font-size:13px;color:#4c5e45;line-height:1.5}.pattern-info{line-height:1.55;font-size:14px}.pattern-info ul{padding-left:19px}.download{display:none;margin-top:12px;text-decoration:none;text-align:center}.warning{background:#f5f0e5;padding:12px;border-radius:12px;font-size:13px;line-height:1.5}.foot{font-size:12px;color:#818576;margin-top:22px}
+#printArea{display:none}@media(max-width:510px){main{padding:17px 15px 35px}.fields{gap:11px}.card{padding:15px}.fashion svg{height:245px}.placeholder{min-height:245px}.preview{gap:8px}}
+@media print{@page{size:A4;margin:0}body{margin:0;background:#fff}main{display:none!important}#printArea{display:block!important}.sheet{width:210mm;height:297mm;padding:10mm;position:relative;overflow:hidden;page-break-after:always;break-after:page}.sheet:last-child{page-break-after:auto;break-after:auto}.tile{width:190mm;height:267mm;display:block}.sheet-tag{position:absolute;left:10mm;top:2mm;font:10px Arial,sans-serif;color:#222}.sheet.intro-sheet{font-family:Arial,sans-serif;padding:16mm}.intro-sheet h2{font-size:23px}.intro-sheet p,.intro-sheet li{font-size:13px;line-height:1.4}}
+</style>
+</head>
+<body>
+<main>
+<header><a href="./" class="back">← Till Kosmiska Katten</a><span class="eyebrow">✂️ VISDOM & SÖMNAD</span></header>
+<h1>✂️ Kattens syateljé</h1>
+<p class="intro">Välj ett plagg, ange dina mått och se en enkel modellskiss. Med bildfunktionen inkopplad kan katten även skapa en inspirationsbild med AI. Du får utskrivbara mönsterdelar i skala 1:1 på A4.</p>
+<section class="card" aria-labelledby="design-heading">
+<h2 id="design-heading">1. Designa ditt plagg</h2>
+<div class="fields">
+<label>Plagg<select id="garment"><option value="top">Enkelt V-ringat linne (provmönster)</option><option value="skirt">Rak kjol med resår</option></select></label>
+<label>Färg på tyg<select id="color"><option value="olive">Olivgrönt</option><option value="blue">Kungsblått</option><option value="cream">Ljusbeige</option><option value="red">Vinrött</option><option value="black">Svart</option></select></label>
+<label>Byst, cm<input id="bust" type="number" min="75" max="170" step="1" value="100" inputmode="decimal"></label>
+<label>Midja, cm<input id="waist" type="number" min="55" max="170" step="1" value="90" inputmode="decimal"></label>
+<label>Stuss, cm<input id="hip" type="number" min="75" max="180" step="1" value="105" inputmode="decimal"></label>
+<label>Färdig plagglängd, cm<input id="length" type="number" min="40" max="115" step="1" value="65" inputmode="decimal"></label>
+</div>
+<div class="actions"><button class="primary" id="draft" type="button">✂️ Rita mitt mönster</button><button class="secondary" id="picture" type="button">✨ Skapa AI-bild</button></div>
+<p class="note">Dina mått används på den här enheten för att rita mönstret. AI-bilden skapas utan att dina kroppsmått skickas till bildmodellen.</p>
+<p id="status" class="status" role="status" aria-live="polite"></p>
+</section>
+<section class="card"><h2>2. Så kan plagget se ut</h2>
+<div class="preview"><div><div class="fashion" id="sketch" aria-label="Schematisk plaggskiss"></div><button class="secondary" id="saveSketch" style="width:100%;margin-top:9px;font-size:12px" type="button">↓ Spara skissbild</button></div><div><div class="placeholder" id="emptyImage">🐾<br>Här visas kattens AI-bild när du trycker på knappen.</div><img id="aiImage" class="generated" alt="AI-genererad inspirationsbild av plagget"><a id="saveImage" class="secondary download" download="kattens-plaggbild.jpg">↓ Spara AI-bilden</a></div></div>
+<p class="note">Bilden visar en idé, inte ett exakt bevis på hur mönstret kommer sitta. Mönstret beräknas separat från bilden.</p>
+</section>
+<section class="card"><h2>3. Skriv ut ditt mönster</h2><div id="instructions" class="pattern-info"></div>
+<div class="actions"><button type="button" id="print" class="primary">🖨️ Skriv ut A4-mönstret</button></div>
+<div class="warning" style="margin-top:14px"><strong>Viktigt:</strong> Skriv ut i <strong>100 % / faktisk storlek</strong>, utan ”anpassa till sida”. Kontrollera kontrollrutan på 5 × 5 cm. Sy ett provplagg i billigt tyg först, framför allt om du väljer linnet. Dessa är förenklade grundmönster, inte professionellt passformsgraderade modeller.</div>
+</section>
+<p class="foot">Kosmiska Katten · Skapad och utvecklad av Jenny Hellgren · Modellbilder genereras vid behov med Cloudflare Workers AI inom kontots användningsgränser.</p>
+</main>
+<div id="printArea" aria-hidden="true"></div>
+<script>
+(()=>{'use strict';
+const $=id=>document.getElementById(id);
+const palette={olive:['#778568','olive green'],blue:['#314d9d','royal blue'],cream:['#dfd0b3','light beige'],red:['#813a48','burgundy'],black:['#333435','black']};
+const ids=['garment','color','bust','waist','hip','length'];
+const read=()=>{
+  const data={garment:$('garment').value,color:$('color').value};
+  for(const key of ['bust','waist','hip','length']){const n=Number($(key).value);if(!Number.isFinite(n))throw Error('Fyll i alla mått.');data[key]=n;}
+  if(data.bust<75||data.bust>170||data.waist<55||data.waist>170||data.hip<75||data.hip>180||data.length<40||data.length>115)throw Error('Ett mått ligger utanför tillåtet intervall.');
+  return data;
+};
+let current=null, imageUrl=null;
+function sketch(d){
+ const c=palette[d.color]?.[0]||palette.olive[0];
+ const body=d.garment==='skirt'
+ ? `<path d="M104 86 Q151 96 196 86 L219 262 Q154 271 82 262Z" fill="${c}" stroke="#445344" stroke-width="3"/><path d="M104 86 Q151 103 196 86" fill="none" stroke="#354331" stroke-width="7"/><path d="M111 119 L91 247 M190 120 L208 247" opacity=".17" stroke="#fff" stroke-width="5"/>`
+ : `<path d="M98 69 L117 51 L148 86 L179 51 L199 69 Q204 100 236 127 L223 260 Q151 270 78 260 L64 127 Q96 99 98 69Z" fill="${c}" stroke="#435042" stroke-width="3"/><path d="M117 51 L148 86 L179 51" fill="none" stroke="#fff" opacity=".6" stroke-width="2"/><path d="M76 242 Q151 252 225 242" fill="none" stroke="#fff" opacity=".24" stroke-width="2"/>`;
+ $('sketch').innerHTML=`<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 300 325" role="img" aria-label="Skiss över valt plagg"><ellipse cx="150" cy="300" rx="85" ry="11" fill="#beb8a980"/><path d="M119 25 Q150 2 180 25 L188 60 207 96 232 151 214 162 192 115 182 155 121 155 107 114 86 162 68 150 93 95 111 59Z" fill="#d4b7a2" opacity=".55"/>${body}<text x="150" y="313" fill="#53664d" text-anchor="middle" font-size="12" font-family="Arial">FRAMIFRÅN · SKISS</text></svg>`;
+}
+function f(n){return Math.round(n*10)/10}
+function pattern(d){
+  const svg=[];let title='',info='',parts=[];
+  if(d.garment==='skirt'){
+    const w=f((d.hip+18)*5+20),h=f(d.length*10+80);
+    title='Rak resårkjol';
+    info=`<p><strong>Klipp:</strong> två likadana rektanglar i tyg, vardera <strong>${f(w/10)} × ${f(h/10)} cm</strong>. Bredden ger 18 cm rörelsevidd vid stussen totalt. Längden inkluderar 5 cm kanal upptill och 3 cm fåll.</p><p><strong>Sy:</strong> 1) Sy ihop sidorna med 1 cm sömsmån. 2) Vik överkanten 1 cm + 4 cm och lämna en öppning. 3) Trä i ca 3 cm brett resårband; börja med ungefär midjemåttet minus 2 cm och prova innan du syr ihop det. 4) Fålla nederkanten 3 cm.</p><p><strong>Storlek:</strong> utgå framför allt från stussvidden och prova att kjolen går över höfterna. Ca ${f((d.hip+18)/100*1.0)} m totalt runt kjolen innan rynkning.</p>`;
+    parts=[{name:'KJOLPANEL · KLIPP 2',svg:`<rect x="14" y="14" width="${w}" height="${h}" fill="none" stroke="#111" stroke-width="0.7"/><line x1="14" y1="64" x2="${w+14}" y2="64" stroke="#777" stroke-dasharray="5 4" stroke-width=".6"/><line x1="14" y1="${h-16}" x2="${w+14}" y2="${h-16}" stroke="#777" stroke-dasharray="5 4" stroke-width=".6"/><text x="29" y="51" font-size="7" fill="#222">RESÅRKANAL · 5 cm</text><text x="29" y="${h-24}" font-size="7" fill="#222">FÅLL · 3 cm</text><text x="${w/2}" y="${h/2}" text-anchor="middle" font-size="8">KJOLPANEL · KLIPP 2</text><text x="${w/2}" y="${h/2+15}" text-anchor="middle" font-size="6">${f(w/10)} × ${f(h/10)} cm · Sömsmån ingår</text>`}];
+    return {title,info,svg:parts[0].svg,width:w+28,height:h+28};
+  }
+  const xBust=(d.bust+16)*2.5,xHip=(Math.max(d.hip+12,d.bust+16))*2.5,len=d.length*10;
+  const bodice=(front,oy)=>{
+    const c=front?145:70;
+    const shape=`M 0 ${c} L 122 17 L 174 17 C 181 88 ${f(xBust-3)} 173 ${f(xBust)} 230 L ${f(xHip)} ${len} L 0 ${len} Z`;
+    return `<g transform="translate(14 ${oy})"><path d="${shape}" fill="none" stroke="#111" stroke-width=".7"/><line x1="0" y1="${c}" x2="0" y2="${len}" stroke="#222" stroke-width=".9" stroke-dasharray="4 2"/><text x="15" y="${len-22}" font-size="7">${front?'FRAMSTYCKE':'BAKSTYCKE'} · KLIPP 1 MOT VIKNING</text><text x="15" y="${len-10}" font-size="6">Lägg till 1 cm sömsmån + 3 cm fåll</text><text x="13" y="${len/2}" font-size="7" transform="rotate(-90 13 ${len/2})">VIKT KANT / MITT ${front?'FRAM':'BAK'}</text><line x1="${f(xHip/2)}" y1="${len/2-60}" x2="${f(xHip/2)}" y2="${len/2+80}" stroke="#555" stroke-width=".5"/><path d="M ${f(xHip/2-4)} ${len/2-50} l 4 -12 4 12 M ${f(xHip/2-4)} ${len/2+68} l 4 12 4 -12" fill="none" stroke="#555" stroke-width=".5"/></g>`;
+  };
+  const gap=35,oy2=len+gap;
+  title='Enkelt V-ringat linne (provmönster)';
+  info=`<p><strong>Klipp:</strong> ett framstycke och ett bakstycke mot tygvikning. Mönstrets linjer visar <strong>färdig sömlinje utan sömsmån</strong>. Lägg till <strong>1 cm sömsmån</strong> runt alla kanter utom tygvikningen, och <strong>3 cm fåll</strong> nedtill. Lägg till snedslå eller infodring till hals och ärmhål.</p><p><strong>Sy:</strong> 1) Klipp provplagg i billigt vävt tyg. 2) Nåla och prova axelbredd, V-ringning och bystvidd. 3) Sy axlar och sidor, pressa sömmar. 4) Kanta ringning och ärmhål. 5) Fålla nederkanten.</p><p><strong>Viktigt om passform:</strong> Det här är en lös, förenklad grundform <strong>utan bystinsnitt</strong>. Särskilt vid fylligare byst behöver du sannolikt justera bystform, axlar eller främre längd innan du syr i fint tyg. Mönstret är inte provat på din kropp.</p>`;
+  return {title,info,svg:bodice(true,14)+bodice(false,oy2+14),width:Math.max(xBust,xHip)+28,height:len*2+gap+28};
+}
+function buildPages(d){
+  const p=pattern(d),W=190,H=267,cx=Math.ceil(p.width/W),cy=Math.ceil(p.height/H),total=cx*cy;
+  if(total>40)throw Error('Mönstret blir för stort för denna utskrift.');
+  const pre=`<section class="sheet intro-sheet"><h2>${p.title}</h2><p>Personliga mått: byst ${d.bust} cm · midja ${d.waist} cm · stuss ${d.hip} cm · plagglängd ${d.length} cm.</p><p><strong>Utskrift i A4 och skala 1:1.</strong> Alla mönstersidor skrivs ut i 100 % / faktisk storlek. Använd inga automatiska marginaler, sidskalning eller ”anpassa till sida”. Klipp eller vik bort de 10 mm breda vita kanterna till hörnmarkeringarna och tejpa därefter mönsterfälten kant mot kant i ordningen sida 1, 2 osv: ${cx} kolumner × ${cy} rader.</p><svg xmlns="http://www.w3.org/2000/svg" width="70mm" height="75mm" viewBox="0 0 70 75"><rect x="10" y="10" width="50" height="50" fill="none" stroke="black" stroke-width=".5"/><text x="10" y="67" font-family="Arial" font-size="4">KONTROLL: 5 × 5 cm</text></svg><p><strong>Kontrollera med en linjal:</strong> Rutan ovan måste bli exakt 5 × 5 cm. Om inte, ändra utskriftsinställningarna.</p><p>Antal mönstersidor: ${total} (plus detta kontrollblad). Svarta linjer är mönsterkonturer; vita fält ska inte klippas ur förrän sidorna satts ihop. Klipp eller vik vid hörnmarkeringarna, cirka 10 mm innanför varje papperskant, och lägg därefter mönsterfälten kant mot kant.</p><p>${d.garment==='skirt'?'Sömsmån ingår för kjolpanelen.':'Lägg till sömsmån enligt instruktionen i syateljén.'}</p></section>`;
+  const pages=[];let n=0;
+  for(let row=0;row<cy;row++)for(let col=0;col<cx;col++){
+    n++;const x=col*W,y=row*H;
+    pages.push(`<section class="sheet"><div class="sheet-tag">${p.title} · sida ${n}/${total} · rad ${row+1}, kolumn ${col+1} · A4 · 100 %</div><svg class="tile" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 190 267" width="190mm" height="267mm"><defs><clipPath id="clip${n}"><rect x="0" y="0" width="190" height="267"/></clipPath></defs><g clip-path="url(#clip${n})" transform="translate(${-x} ${-y})">${p.svg}</g><path d="M0 5 V0 H5 M185 0 H190 V5 M0 262 V267 H5 M185 267 H190 V262" stroke="#777" stroke-width=".25" fill="none"/></svg></section>`);
+  }
+  $('printArea').innerHTML=pre+pages.join('');
+  $('instructions').innerHTML=p.info+`<p><strong>Utskrift:</strong> ${total} mönstersidor + 1 kontrollblad. Lägg sidorna i ${cx} kolumner och ${cy} rader.</p>`;
+  return p;
+}
+function update(){try{const d=read();current=d;sketch(d);buildPages(d);$('status').textContent='Mönstret är klart! Kontrollera utskriftsrutans mått när du skriver ut.';return d;}catch(e){$('status').textContent=e.message;return null;}}
+$('draft').addEventListener('click',update);
+$('saveSketch').addEventListener('click',()=>{
+  const svg=$('sketch').querySelector('svg');if(!svg)return;
+  const xml=new XMLSerializer().serializeToString(svg);
+  const blob=new Blob([xml],{type:'image/svg+xml;charset=utf-8'});
+  const u=URL.createObjectURL(blob),a=document.createElement('a');
+  a.href=u;a.download='kattens-plaggskiss.svg';a.click();setTimeout(()=>URL.revokeObjectURL(u),2000);
+});
+$('print').addEventListener('click',()=>{if(update())window.print();});
+$('picture').addEventListener('click',async()=>{
+  const d=update();if(!d)return;
+  const password=(()=>{try{return JSON.parse(localStorage.getItem('jennys-ai-v1:password')||'""');}catch{return '';}})();
+  if(!password){$('status').textContent='För att skapa AI-bilden behöver du först spara din vanliga appkod under Kosmiska Kattens Inställningar.';return;}
+  const btn=$('picture');btn.disabled=true;btn.textContent='🐈 Katten målar ...';$('status').textContent='Skapar inspirationsbild med bild-AI. Det kan ta en liten stund.';
+  try{
+    const ctrl=new AbortController(),timer=setTimeout(()=>ctrl.abort(),45000);
+    let resp;try{resp=await fetch('./api/sew-image',{method:'POST',headers:{'Content-Type':'application/json','x-app-password':password},body:JSON.stringify({garment:d.garment,color:d.color}),signal:ctrl.signal});}finally{clearTimeout(timer);}
+    if(!resp.ok){const j=await resp.json().catch(()=>({}));throw Error(resp.status===404?'AI-bildfunktionen är inte inkopplad på servern ännu.':(j.error||'Bildmotorn kunde inte svara.'));}
+    const blob=await resp.blob();if(!blob.type.startsWith('image/'))throw Error('Bildmotorn skickade inget bildformat.');
+    if(imageUrl)URL.revokeObjectURL(imageUrl);imageUrl=URL.createObjectURL(blob);
+    $('aiImage').src=imageUrl;$('aiImage').style.display='block';$('emptyImage').style.display='none';$('saveImage').href=imageUrl;$('saveImage').style.display='block';
+    $('status').textContent='AI-bilden är klar! Kom ihåg att skissen och mönsterdelarna, inte AI-bilden, styr dina mått.';
+  }catch(e){$('status').textContent=e.name==='AbortError'?'Bildskapandet tog för lång tid. Försök igen.':e.message;}
+  finally{btn.disabled=false;btn.textContent='✨ Skapa AI-bild';}
+});
+for(const id of ids)$(id).addEventListener('change',()=>{if(id==='garment'){$('length').value=$(id).value==='skirt'?65:65;} update();});
+update();
+})();
+</script>
+</body>
+</html>
